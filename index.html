@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="点菜">
+<title>今天吃什么</title>
+<style>
+:root{--bg:#fff8f0;--card:#fff;--ink:#3a2e28;--sub:#9a8b80;--accent:#ff6b4a;--line:#f0e4d8}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1816;--card:#2a2421;--ink:#f3e9e1;--sub:#a0928a;--line:#3a322d}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"PingFang SC",sans-serif;padding:0 16px 120px}
+header{padding:calc(env(safe-area-inset-top) + 20px) 0 8px;display:flex;justify-content:space-between;align-items:baseline}
+h1{margin:0;font-size:26px}
+header button{background:none;border:0;color:var(--sub);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.dish{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 12px;text-align:left;color:inherit;font:inherit;position:relative}
+.dish .e{font-size:34px;display:block}
+.dish .n{font-weight:600;margin-top:4px;display:block}
+.dish .i{color:var(--sub);font-size:12px;display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dish.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--card))}
+.dish.on::after{content:"✓";position:absolute;top:8px;right:12px;color:var(--accent);font-weight:700}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(env(safe-area-inset-bottom) + 12px);background:var(--bg);border-top:1px solid var(--line);display:flex;gap:10px}
+.bar button{flex:1;border:0;border-radius:14px;padding:14px;font:600 16px inherit;background:var(--accent);color:#fff}
+.bar button.alt{flex:.6;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.bar button:disabled{opacity:.4}
+dialog{border:0;border-radius:18px;width:calc(100% - 32px);max-width:480px;background:var(--card);color:var(--ink);padding:16px}
+dialog::backdrop{background:#0006}
+textarea{width:100%;height:50vh;border:1px solid var(--line);border-radius:10px;padding:10px;font:14px/1.5 ui-monospace,monospace;background:var(--bg);color:var(--ink)}
+dialog p{color:var(--sub);font-size:13px;margin:0 0 8px}
+dialog menu{display:flex;gap:10px;padding:0;margin:12px 0 0}
+dialog menu button{flex:1;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+dialog menu button.p{background:var(--accent);color:#fff;border:0}
+#toast{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:#000c;color:#fff;padding:8px 16px;border-radius:20px;font-size:14px;opacity:0;transition:.3s;pointer-events:none}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header><h1>今天吃什么 🍳</h1><button id="edit">编辑菜单</button></header>
+<div class="grid" id="grid"></div>
+<div class="bar">
+  <button class="alt" id="share" disabled>存到备忘录(分享)</button>
+  <button id="go" disabled>下单</button>
+</div>
+<dialog id="dlg">
+  <p>每行一道菜：<b>emoji 菜名: 材料1 数量, 材料2 数量</b></p>
+  <textarea id="ta"></textarea>
+  <menu><button id="cancel">取消</button><button class="p" id="save">保存</button></menu>
+</dialog>
+<div id="toast"></div>
+<script>
+// 在这里改成你的快捷指令名字
+const SHORTCUT_NAME = "点菜入备忘录";
+
+const DEFAULT_MENU = `🥩 红烧肉: 五花肉 500g, 冰糖 30g, 生抽, 老抽, 料酒, 姜, 八角
+🍅 番茄炒蛋: 番茄 2个, 鸡蛋 3个, 葱, 糖
+🐟 清蒸鱼: 鲈鱼 1条, 姜, 葱, 蒸鱼豆豉油
+🥬 蒜蓉青菜: 青菜 300g, 大蒜 4瓣
+🍗 可乐鸡翅: 鸡翅 10个, 可乐 1罐, 姜, 生抽
+🥔 酸辣土豆丝: 土豆 2个, 干辣椒, 白醋, 蒜
+🍲 冬瓜排骨汤: 排骨 400g, 冬瓜 500g, 姜
+🍳 麻婆豆腐: 嫩豆腐 1盒, 猪肉末 100g, 郫县豆瓣酱, 花椒粉`;
+
+const store = {
+  get(k){try{return localStorage.getItem(k)}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+};
+
+const $ = id => document.getElementById(id);
+let menu = [], picked = new Set();
+
+function parse(text){
+  return text.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
+    const [head, ...rest] = l.split(/[:：]/);
+    const m = head.trim().match(/^(\p{Extended_Pictographic}️?)?\s*(.+)$/u);
+    return {emoji:m[1]||"🍽️", name:m[2], ings:rest.join(":").split(/[,，、]/).map(s=>s.trim()).filter(Boolean)};
+  });
+}
+
+function render(){
+  $("grid").innerHTML = "";
+  menu.forEach((d,i)=>{
+    const b = document.createElement("button");
+    b.className = "dish" + (picked.has(i) ? " on" : "");
+    b.innerHTML = `<span class="e">${d.emoji}</span><span class="n"></span><span class="i"></span>`;
+    b.querySelector(".n").textContent = d.name;
+    b.querySelector(".i").textContent = d.ings.join("、");
+    b.onclick = () => { picked.has(i) ? picked.delete(i) : picked.add(i); render(); };
+    $("grid").appendChild(b);
+  });
+  const n = picked.size;
+  $("go").disabled = $("share").disabled = !n;
+  $("go").textContent = n ? `下单 (${n}道菜)` : "下单";
+}
+
+function buildText(){
+  const d = new Date();
+  const lines = [`🍽️ ${d.getMonth()+1}月${d.getDate()}日 点菜清单`, ""];
+  [...picked].sort((a,b)=>a-b).forEach(i=>{
+    lines.push(`【${menu[i].name}】`);
+    menu[i].ings.forEach(g=>lines.push(`☐ ${g}`));
+    lines.push("");
+  });
+  return lines.join("\n").trim();
+}
+
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+function afterSend(){
+  picked.clear(); render();
+}
+
+$("go").onclick = () => {
+  const text = buildText();
+  navigator.clipboard?.writeText(text).catch(()=>{}); // 兜底：同时复制一份
+  location.href = `shortcuts://run-shortcut?name=${encodeURIComponent(SHORTCUT_NAME)}&input=text&text=${encodeURIComponent(text)}`;
+  toast("已发送到备忘录 ✓");
+  setTimeout(afterSend, 800);
+};
+
+$("share").onclick = async () => {
+  const text = buildText();
+  if (navigator.share) {
+    try { await navigator.share({text}); afterSend(); } catch(e){}
+  } else {
+    await navigator.clipboard?.writeText(text);
+    toast("已复制，去备忘录粘贴");
+  }
+};
+
+$("edit").onclick = () => {
+  $("ta").value = menu.map(d=>`${d.emoji} ${d.name}: ${d.ings.join(", ")}`).join("\n");
+  $("dlg").showModal();
+};
+$("cancel").onclick = () => $("dlg").close();
+$("save").onclick = () => {
+  store.set("menu", $("ta").value);
+  menu = parse($("ta").value); picked.clear(); render();
+  $("dlg").close();
+};
+
+menu = parse(store.get("menu") || DEFAULT_MENU);
+render();
+</script>
+</body>
+</html>
