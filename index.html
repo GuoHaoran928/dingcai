@@ -5,101 +5,245 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="点菜">
-<title>今天吃什么</title>
+<title>老公小厨</title>
 <style>
-:root{--bg:#fff8f0;--card:#fff;--ink:#3a2e28;--sub:#9a8b80;--accent:#ff6b4a;--line:#f0e4d8}
-@media(prefers-color-scheme:dark){:root{--bg:#1c1816;--card:#2a2421;--ink:#f3e9e1;--sub:#a0928a;--line:#3a322d}}
+:root{--bg:#f5f5f5;--card:#fff;--ink:#222;--sub:#999;--line:#eee;--yellow:#ffd100;--yellow-d:#e6bc00;--red:#ff4d3a;--side:#f5f5f5}
+@media(prefers-color-scheme:dark){:root{--bg:#121212;--card:#1e1e1e;--ink:#eee;--sub:#888;--line:#2c2c2c;--side:#161616}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"PingFang SC",sans-serif;padding:0 16px 120px}
-header{padding:calc(env(safe-area-inset-top) + 20px) 0 8px;display:flex;justify-content:space-between;align-items:baseline}
-h1{margin:0;font-size:26px}
-header button{background:none;border:0;color:var(--sub);font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
-.dish{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 12px;text-align:left;color:inherit;font:inherit;position:relative}
-.dish .e{font-size:34px;display:block}
-.dish .n{font-weight:600;margin-top:4px;display:block}
-.dish .i{color:var(--sub);font-size:12px;display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dish.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--card))}
-.dish.on::after{content:"✓";position:absolute;top:8px;right:12px;color:var(--accent);font-weight:700}
-.bar{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(env(safe-area-inset-bottom) + 12px);background:var(--bg);border-top:1px solid var(--line);display:flex;gap:10px}
-.bar button{flex:1;border:0;border-radius:14px;padding:14px;font:600 16px inherit;background:var(--accent);color:#fff}
-.bar button.alt{flex:.6;background:var(--card);color:var(--ink);border:1px solid var(--line)}
-.bar button:disabled{opacity:.4}
-dialog{border:0;border-radius:18px;width:calc(100% - 32px);max-width:480px;background:var(--card);color:var(--ink);padding:16px}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,"PingFang SC",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;color:inherit;border:0;background:none;padding:0}
+
+.banner{background:linear-gradient(135deg,#ffd100,#ffb800);padding:calc(env(safe-area-inset-top) + 14px) 16px 44px;color:#222;position:relative;flex:none}
+.banner .row{display:flex;justify-content:space-between;align-items:center}
+.logo{width:56px;height:56px;border-radius:12px;background:#fff;display:grid;place-items:center;font-size:34px;box-shadow:0 2px 8px #0002}
+.banner h1{margin:0 0 2px;font-size:20px}
+.banner p{margin:0;font-size:12px;opacity:.75}
+.banner .shop{display:flex;gap:12px;align-items:center}
+#edit{font-size:12px;background:#0001;border-radius:12px;padding:4px 10px}
+.notice{position:absolute;left:12px;right:12px;bottom:-14px;background:var(--card);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--sub);box-shadow:0 2px 8px #0001;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notice b{color:var(--red);margin-right:6px}
+
+.main{flex:1;display:flex;min-height:0;margin-top:14px;background:var(--card);border-radius:14px 14px 0 0}
+.side{width:84px;flex:none;overflow-y:auto;background:var(--side);border-radius:14px 0 0 0}
+.side button{display:block;width:100%;padding:16px 8px;font-size:13px;color:var(--sub);text-align:center;position:relative}
+.side button.on{background:var(--card);color:var(--ink);font-weight:700}
+.side button.on::before{content:"";position:absolute;left:0;top:50%;height:18px;width:4px;margin-top:-9px;background:var(--yellow);border-radius:0 3px 3px 0}
+.side .cnt{position:absolute;top:8px;right:8px;min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#fff;font-size:10px;line-height:16px;font-weight:600}
+
+.list{flex:1;overflow-y:auto;padding:0 12px 110px;scroll-behavior:smooth}
+.cat{font-size:13px;color:var(--sub);padding:14px 0 6px;font-weight:600}
+.item{display:flex;gap:10px;padding:10px 0}
+.pic{width:78px;height:78px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:42px}
+.info{flex:1;min-width:0;display:flex;flex-direction:column}
+.info .n{font-weight:700;font-size:16px}
+.info .i{color:var(--sub);font-size:12px;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.info .tag{display:inline-block;margin-top:4px;font-size:10px;color:var(--red);border:1px solid var(--red);border-radius:3px;padding:0 4px;align-self:flex-start}
+.info .bot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:4px}
+.price{color:var(--red);font-weight:700;font-size:13px}
+.price i{font-style:normal;font-size:11px}
+
+.step{display:flex;align-items:center;gap:8px}
+.step .q{min-width:16px;text-align:center;font-weight:600}
+.step button{width:24px;height:24px;border-radius:50%;font-size:18px;line-height:22px;font-weight:700;text-align:center}
+.step .add{background:var(--yellow);color:#222}
+.step .sub{border:1.5px solid var(--yellow-d);color:var(--ink)}
+
+.cart{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 10px);height:52px;border-radius:26px;background:#333;display:flex;align-items:center;z-index:20;box-shadow:0 4px 16px #0005}
+.bag{position:relative;width:56px;height:56px;margin:-8px 0 0 6px;border-radius:50%;background:#555;border:4px solid var(--bg);display:grid;place-items:center;font-size:26px;flex:none}
+.bag.has{background:var(--yellow)}
+.bag .badge{position:absolute;top:-2px;right:-2px;min-width:20px;height:20px;border-radius:10px;background:var(--red);color:#fff;font-size:12px;line-height:20px;text-align:center;font-weight:700;padding:0 4px}
+.cart .txt{flex:1;padding-left:12px;color:#fff;font-size:15px}
+.cart .txt small{display:block;color:#aaa;font-size:11px}
+.cart .go{height:52px;padding:0 26px;border-radius:0 26px 26px 0;background:var(--yellow);color:#222;font-weight:700;font-size:16px}
+.cart .go:disabled{background:#555;color:#999}
+
+.mask{position:fixed;inset:0;background:#0006;z-index:10;display:none}
+.mask.show{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--card);border-radius:16px 16px 0 0;padding:0 16px calc(env(safe-area-inset-bottom) + 76px);transform:translateY(100%);transition:transform .25s;max-height:65vh;overflow-y:auto}
+.sheet.show{transform:none}
+.sheet .hd{display:flex;justify-content:space-between;padding:14px 0 6px;position:sticky;top:0;background:var(--card);font-weight:700}
+.sheet .hd button{color:var(--sub);font-weight:400;font-size:13px}
+.sheet .it{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.sheet .it .e{font-size:26px}
+.sheet .it .n{flex:1;font-weight:600}
+.empty{text-align:center;color:var(--sub);padding:30px 0}
+
+dialog{border:0;border-radius:16px;width:calc(100% - 32px);max-width:480px;background:var(--card);color:var(--ink);padding:16px}
 dialog::backdrop{background:#0006}
-textarea{width:100%;height:50vh;border:1px solid var(--line);border-radius:10px;padding:10px;font:14px/1.5 ui-monospace,monospace;background:var(--bg);color:var(--ink)}
-dialog p{color:var(--sub);font-size:13px;margin:0 0 8px}
+dialog p{color:var(--sub);font-size:12px;margin:0 0 8px}
+textarea{width:100%;height:50vh;border:1px solid var(--line);border-radius:10px;padding:10px;font:13px/1.5 ui-monospace,monospace;background:var(--bg);color:var(--ink)}
 dialog menu{display:flex;gap:10px;padding:0;margin:12px 0 0}
-dialog menu button{flex:1;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
-dialog menu button.p{background:var(--accent);color:#fff;border:0}
-#toast{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:#000c;color:#fff;padding:8px 16px;border-radius:20px;font-size:14px;opacity:0;transition:.3s;pointer-events:none}
+dialog menu button{flex:1;padding:12px;border-radius:12px;background:var(--bg)}
+dialog menu button.p{background:var(--yellow);color:#222;font-weight:700}
+#toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:#000c;color:#fff;padding:8px 16px;border-radius:20px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:50;white-space:nowrap}
 #toast.show{opacity:1}
 </style>
 </head>
 <body>
-<header><h1>今天吃什么 🍳</h1><button id="edit">编辑菜单</button></header>
-<div class="grid" id="grid"></div>
-<div class="bar">
-  <button class="alt" id="share" disabled>存到备忘录(分享)</button>
-  <button id="go" disabled>下单</button>
+<div class="banner">
+  <div class="row">
+    <div class="shop">
+      <div class="logo">👨‍🍳</div>
+      <div><h1>老公小厨 · 营业中</h1><p>每道菜都用心做 · 预计 30 分钟出餐</p></div>
+    </div>
+    <button id="edit">编辑菜单</button>
+  </div>
+  <div class="notice"><b>公告</b>点好菜，材料自动记到老公的备忘录里，采购不遗漏~</div>
 </div>
+
+<div class="main">
+  <nav class="side" id="side"></nav>
+  <div class="list" id="list"></div>
+</div>
+
+<div class="mask" id="mask"></div>
+<div class="sheet" id="sheet"></div>
+
+<div class="cart">
+  <button class="bag" id="bag">🛒<span class="badge" id="badge" hidden>0</span></button>
+  <div class="txt" id="ctxt">还没点菜</div>
+  <button class="go" id="go" disabled>去下单</button>
+</div>
+
 <dialog id="dlg">
-  <p>每行一道菜：<b>emoji 菜名: 材料1 数量, 材料2 数量</b></p>
+  <p><b># 分类名</b> 单独一行；每道菜一行：<b>🥩 菜名: 材料 数量, 材料 数量</b></p>
   <textarea id="ta"></textarea>
-  <menu><button id="cancel">取消</button><button class="p" id="save">保存</button></menu>
+  <menu><button id="share">分享到备忘录</button><button id="cancel">取消</button><button class="p" id="save">保存</button></menu>
 </dialog>
 <div id="toast"></div>
+
 <script>
-// 在这里改成你的快捷指令名字
+// 快捷指令的名字，要和 iPhone 里建的一致
 const SHORTCUT_NAME = "点菜入备忘录";
 
-const DEFAULT_MENU = `🥩 红烧肉: 五花肉 500g, 冰糖 30g, 生抽, 老抽, 料酒, 姜, 八角
-🍅 番茄炒蛋: 番茄 2个, 鸡蛋 3个, 葱, 糖
-🐟 清蒸鱼: 鲈鱼 1条, 姜, 葱, 蒸鱼豆豉油
-🥬 蒜蓉青菜: 青菜 300g, 大蒜 4瓣
+const DEFAULT_MENU = `# 荤菜
+🥩 红烧肉: 五花肉 500g, 冰糖 30g, 生抽, 老抽, 料酒, 姜, 八角
 🍗 可乐鸡翅: 鸡翅 10个, 可乐 1罐, 姜, 生抽
+🐟 清蒸鱼: 鲈鱼 1条, 姜, 葱, 蒸鱼豆豉油
+🦐 蒜蓉粉丝虾: 大虾 10只, 粉丝 1把, 大蒜 1头
+# 素菜
+🍅 番茄炒蛋: 番茄 2个, 鸡蛋 3个, 葱, 糖
 🥔 酸辣土豆丝: 土豆 2个, 干辣椒, 白醋, 蒜
+🥬 蒜蓉青菜: 青菜 300g, 大蒜 4瓣
+🍳 麻婆豆腐: 嫩豆腐 1盒, 猪肉末 100g, 郫县豆瓣酱, 花椒粉
+# 汤羹
 🍲 冬瓜排骨汤: 排骨 400g, 冬瓜 500g, 姜
-🍳 麻婆豆腐: 嫩豆腐 1盒, 猪肉末 100g, 郫县豆瓣酱, 花椒粉`;
+🥣 紫菜蛋花汤: 紫菜 1小把, 鸡蛋 2个, 虾皮
+# 主食
+🍚 蛋炒饭: 米饭 2碗, 鸡蛋 2个, 葱, 火腿肠
+🍜 葱油拌面: 面条 200g, 小葱 1把, 生抽, 老抽`;
 
+const TINTS = ["#ffe9e0","#fff3cf","#e3f4e1","#e2eefc","#f3e6fa","#ffe6ec"];
 const store = {
   get(k){try{return localStorage.getItem(k)}catch(e){return null}},
   set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 };
-
 const $ = id => document.getElementById(id);
-let menu = [], picked = new Set();
+
+let cats = [];          // [{name, dishes:[{id,emoji,name,ings}]}]
+let qty = {};           // id -> count
+let dishById = {};
 
 function parse(text){
-  return text.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
+  const out = []; let cur = null, id = 0;
+  dishById = {};
+  text.split("\n").map(l=>l.trim()).filter(Boolean).forEach(l=>{
+    if (l.startsWith("#")) { cur = {name:l.replace(/^#+\s*/,""), dishes:[]}; out.push(cur); return; }
+    if (!cur) { cur = {name:"菜单", dishes:[]}; out.push(cur); }
     const [head, ...rest] = l.split(/[:：]/);
     const m = head.trim().match(/^(\p{Extended_Pictographic}️?)?\s*(.+)$/u);
-    return {emoji:m[1]||"🍽️", name:m[2], ings:rest.join(":").split(/[,，、]/).map(s=>s.trim()).filter(Boolean)};
+    const d = {id:id++, emoji:m[1]||"🍽️", name:m[2],
+      ings:rest.join(":").split(/[,，、]/).map(s=>s.trim()).filter(Boolean)};
+    cur.dishes.push(d); dishById[d.id] = d;
   });
+  return out;
 }
 
-function render(){
-  $("grid").innerHTML = "";
-  menu.forEach((d,i)=>{
-    const b = document.createElement("button");
-    b.className = "dish" + (picked.has(i) ? " on" : "");
-    b.innerHTML = `<span class="e">${d.emoji}</span><span class="n"></span><span class="i"></span>`;
-    b.querySelector(".n").textContent = d.name;
-    b.querySelector(".i").textContent = d.ings.join("、");
-    b.onclick = () => { picked.has(i) ? picked.delete(i) : picked.add(i); render(); };
-    $("grid").appendChild(b);
-  });
-  const n = picked.size;
-  $("go").disabled = $("share").disabled = !n;
-  $("go").textContent = n ? `下单 (${n}道菜)` : "下单";
+const total = () => Object.values(qty).reduce((a,b)=>a+b,0);
+const stepper = id => qty[id]
+  ? `<div class="step"><button class="sub" data-s="${id}">−</button><span class="q">${qty[id]}</span><button class="add" data-a="${id}">+</button></div>`
+  : `<div class="step"><button class="add" data-a="${id}">+</button></div>`;
+
+function renderList(){
+  const keep = $("list").scrollTop;
+  $("list").innerHTML = cats.map((c,ci)=>
+    `<div class="cat" id="c${ci}">${esc(c.name)}</div>` +
+    c.dishes.map(d=>`
+    <div class="item">
+      <div class="pic" style="background:${TINTS[d.id%TINTS.length]}">${d.emoji}</div>
+      <div class="info">
+        <span class="n">${esc(d.name)}</span>
+        <span class="i">${esc(d.ings.join("、"))}</span>
+        ${d.id%3===0?'<span class="tag">老婆最爱</span>':''}
+        <div class="bot"><span class="price"><i>需</i> ${d.ings.length} <i>样材料</i></span><span data-st="${d.id}">${stepper(d.id)}</span></div>
+      </div>
+    </div>`).join("")).join("");
+  $("list").scrollTop = keep;
+  renderSide(); renderCart();
 }
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+let activeCat = 0;
+function renderSide(){
+  $("side").innerHTML = cats.map((c,i)=>{
+    const n = c.dishes.reduce((a,d)=>a+(qty[d.id]||0),0);
+    return `<button class="${i===activeCat?"on":""}" data-c="${i}">${esc(c.name)}${n?`<span class="cnt">${n}</span>`:""}</button>`;
+  }).join("");
+}
+
+function renderCart(){
+  const n = total();
+  $("badge").hidden = !n; $("badge").textContent = n;
+  $("bag").classList.toggle("has", !!n);
+  $("go").disabled = !n;
+  $("ctxt").innerHTML = n ? `已点 ${n} 道菜<small>材料将存入备忘录</small>` : "还没点菜";
+  if ($("sheet").classList.contains("show")) renderSheet();
+}
+
+function renderSheet(){
+  const ids = Object.keys(qty).map(Number).sort((a,b)=>a-b);
+  $("sheet").innerHTML = `<div class="hd"><span>已选菜品</span><button id="clear">🗑 清空</button></div>` +
+    (ids.length ? ids.map(id=>`<div class="it"><span class="e">${dishById[id].emoji}</span><span class="n">${esc(dishById[id].name)}</span>${stepper(id)}</div>`).join("")
+                : `<div class="empty">购物车是空的</div>`);
+}
+
+function change(id, delta){
+  qty[id] = (qty[id]||0) + delta;
+  if (qty[id] <= 0) delete qty[id];
+  renderList();
+}
+
+document.addEventListener("click", e=>{
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.a) change(+t.dataset.a, 1);
+  else if (t.dataset.s) change(+t.dataset.s, -1);
+  else if (t.dataset.c) { activeCat = +t.dataset.c; $("c"+activeCat).scrollIntoView({block:"start"}); renderSide(); }
+  else if (t.id === "clear") { qty = {}; renderList(); toggleSheet(false); }
+});
+
+$("list").addEventListener("scroll", ()=>{
+  const top = $("list").getBoundingClientRect().top + 40;
+  let cur = 0;
+  cats.forEach((_,i)=>{ if ($("c"+i).getBoundingClientRect().top <= top) cur = i; });
+  if (cur !== activeCat) { activeCat = cur; renderSide(); }
+});
+
+function toggleSheet(show){
+  if (show) renderSheet();
+  $("sheet").classList.toggle("show", show);
+  $("mask").classList.toggle("show", show);
+}
+$("bag").onclick = () => { if (total()) toggleSheet(!$("sheet").classList.contains("show")); };
+$("mask").onclick = () => toggleSheet(false);
 
 function buildText(){
   const d = new Date();
   const lines = [`🍽️ ${d.getMonth()+1}月${d.getDate()}日 点菜清单`, ""];
-  [...picked].sort((a,b)=>a-b).forEach(i=>{
-    lines.push(`【${menu[i].name}】`);
-    menu[i].ings.forEach(g=>lines.push(`☐ ${g}`));
+  Object.keys(qty).map(Number).sort((a,b)=>a-b).forEach(id=>{
+    const dish = dishById[id];
+    lines.push(`【${dish.name}】${qty[id]>1?" ×"+qty[id]:""}`);
+    dish.ings.forEach(g=>lines.push(`☐ ${g}`));
     lines.push("");
   });
   return lines.join("\n").trim();
@@ -110,41 +254,35 @@ function toast(msg){
   setTimeout(()=>t.classList.remove("show"), 2200);
 }
 
-function afterSend(){
-  picked.clear(); render();
-}
-
 $("go").onclick = () => {
   const text = buildText();
-  navigator.clipboard?.writeText(text).catch(()=>{}); // 兜底：同时复制一份
+  navigator.clipboard?.writeText(text).catch(()=>{});
   location.href = `shortcuts://run-shortcut?name=${encodeURIComponent(SHORTCUT_NAME)}&input=text&text=${encodeURIComponent(text)}`;
-  toast("已发送到备忘录 ✓");
-  setTimeout(afterSend, 800);
+  toast("下单成功，材料已发往备忘录 ✓");
+  setTimeout(()=>{ qty = {}; toggleSheet(false); renderList(); }, 800);
 };
 
+// 没建快捷指令时的备用：系统分享菜单 → 备忘录
 $("share").onclick = async () => {
+  if (!total()) return toast("先点几道菜");
   const text = buildText();
-  if (navigator.share) {
-    try { await navigator.share({text}); afterSend(); } catch(e){}
-  } else {
-    await navigator.clipboard?.writeText(text);
-    toast("已复制，去备忘录粘贴");
-  }
+  if (navigator.share) { try { await navigator.share({text}); } catch(e){} }
+  else { await navigator.clipboard?.writeText(text); toast("已复制，去备忘录粘贴"); }
 };
 
-$("edit").onclick = () => {
-  $("ta").value = menu.map(d=>`${d.emoji} ${d.name}: ${d.ings.join(", ")}`).join("\n");
-  $("dlg").showModal();
-};
+function menuToText(){
+  return cats.map(c=>`# ${c.name}\n`+c.dishes.map(d=>`${d.emoji} ${d.name}: ${d.ings.join(", ")}`).join("\n")).join("\n");
+}
+$("edit").onclick = () => { $("ta").value = menuToText(); $("dlg").showModal(); };
 $("cancel").onclick = () => $("dlg").close();
 $("save").onclick = () => {
-  store.set("menu", $("ta").value);
-  menu = parse($("ta").value); picked.clear(); render();
+  store.set("menu2", $("ta").value);
+  cats = parse($("ta").value); qty = {}; activeCat = 0; renderList();
   $("dlg").close();
 };
 
-menu = parse(store.get("menu") || DEFAULT_MENU);
-render();
+cats = parse(store.get("menu2") || DEFAULT_MENU);
+renderList();
 </script>
 </body>
 </html>
