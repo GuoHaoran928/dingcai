@@ -34,7 +34,8 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .list{flex:1;overflow-y:auto;padding:0 12px 110px;scroll-behavior:smooth}
 .cat{font-size:13px;color:var(--sub);padding:14px 0 6px;font-weight:600}
 .item{display:flex;gap:10px;padding:10px 0}
-.pic{width:78px;height:78px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:42px}
+.pic{width:78px;height:78px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:42px;overflow:hidden}
+.pic img{width:100%;height:100%;object-fit:cover;display:block}
 .info{flex:1;min-width:0;display:flex;flex-direction:column}
 .info .n{font-weight:700;font-size:16px}
 .info .i{color:var(--sub);font-size:12px;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -140,6 +141,8 @@ const DEFAULT_MENU = `# 荤菜
 🍜 卤面: 面条 300g, 五花肉 150g, 豆角 100g, 生抽, 老抽, 葱
 🥭 芒果糯米饭: 糯米 200g, 芒果 2个, 椰浆 200ml, 糖`;
 
+// 菜名 -> 实拍图（来源见 credits.html）；没有图的菜显示 emoji
+const IMGS = {"红烧肉": "img/00.jpg", "可乐鸡翅": "img/01.jpg", "油焖大虾": "img/02.jpg", "蒜蓉粉丝虾": "img/03.jpg", "蒜蓉粉丝扇贝": "img/04.jpg", "清炖牛肋条": "img/05.jpg", "卤鸡腿": "img/06.jpg", "番茄炒蛋": "img/07.jpg", "韭菜鸡蛋": "img/08.jpg", "酸辣土豆丝": "img/09.jpg", "蒜蓉青菜": "img/10.jpg", "炒时蔬": "img/11.jpg", "紫菜蛋花汤": "img/12.jpg", "蛋炒饭": "img/13.jpg", "担担面": "img/14.jpg", "卤面": "img/15.jpg", "芒果糯米饭": "img/16.jpg"};
 const TINTS = ["#ffe9e0","#fff3cf","#e3f4e1","#e2eefc","#f3e6fa","#ffe6ec"];
 const store = {
   get(k){try{return localStorage.getItem(k)}catch(e){return null}},
@@ -177,14 +180,14 @@ function renderList(){
     `<div class="cat" id="c${ci}">${esc(c.name)}</div>` +
     c.dishes.map(d=>`
     <div class="item">
-      <div class="pic" style="background:${TINTS[d.id%TINTS.length]}">${d.emoji}</div>
+      <div class="pic" style="background:${TINTS[d.id%TINTS.length]}">${IMGS[d.name]?`<img src="${IMGS[d.name]}" alt="" loading="lazy">`:d.emoji}</div>
       <div class="info">
         <span class="n">${esc(d.name)}</span>
         <span class="i">${esc(d.ings.join("、"))}</span>
         ${d.id%3===0?'<span class="tag">老婆最爱</span>':''}
         <div class="bot"><span class="price"><i>需</i> ${d.ings.length} <i>样材料</i></span><span data-st="${d.id}">${stepper(d.id)}</span></div>
       </div>
-    </div>`).join("")).join("");
+    </div>`).join("")).join("") + `<div style="text-align:center;font-size:11px;padding:16px"><a href="credits.html" style="color:var(--sub)">图片来源</a></div>`;
   $("list").scrollTop = keep;
   renderSide(); renderCart();
 }
