@@ -122,12 +122,15 @@ const DEFAULT_MENU = `# 荤菜
 🥩 红烧肉: 五花肉 500g, 冰糖 30g, 生抽, 老抽, 料酒, 姜, 八角
 🍗 可乐鸡翅: 鸡翅 10个, 可乐 1罐, 姜, 生抽
 🦐 油焖大虾: 大虾 500g, 葱, 姜, 蒜, 料酒, 生抽, 糖
+🍳 农家一碗香: 五花肉 200g, 鸡蛋 3个, 青椒 3个, 豆豉, 小米辣, 蒜
+🦞 龙虾尾: 小龙虾尾 500g, 蒜 1头, 姜, 葱, 干辣椒, 料酒
 🦪 蒜蓉粉丝扇贝: 扇贝 8个, 粉丝 1把, 大蒜 1头, 小米辣, 蒸鱼豆豉油
 🍖 清炖牛肋条: 牛肋条 800g, 姜, 葱, 料酒, 八角, 白萝卜 1根
 🍗 卤鸡腿: 鸡腿 4个, 卤料包, 生抽, 老抽, 冰糖, 姜
 # 素菜
 🍅 番茄炒蛋: 番茄 2个, 鸡蛋 3个, 葱, 糖
 🥬 韭菜鸡蛋: 韭菜 1把, 鸡蛋 4个
+🥦 干锅花菜: 有机花菜 1颗, 五花肉片 100g, 干辣椒, 蒜, 郫县豆瓣酱, 生抽
 🥔 酸辣土豆丝: 土豆 2个, 干辣椒, 白醋, 蒜
 🥬 蒜蓉青菜: 青菜 300g, 大蒜 4瓣
 🥦 炒时蔬: 时令蔬菜 300g, 大蒜 3瓣
@@ -141,7 +144,7 @@ const DEFAULT_MENU = `# 荤菜
 🥭 芒果糯米饭: 糯米 200g, 芒果 2个, 椰浆 200ml, 糖`;
 
 // 菜名 -> 实拍图（来源见 credits.html）；没有图的菜显示 emoji
-const IMGS = {"红烧肉": "img/00.jpg", "可乐鸡翅": "img/01.jpg", "油焖大虾": "img/02.jpg", "蒜蓉粉丝扇贝": "img/04.jpg", "清炖牛肋条": "img/05.jpg", "卤鸡腿": "img/06.jpg", "番茄炒蛋": "img/07.jpg", "韭菜鸡蛋": "img/08.jpg", "酸辣土豆丝": "img/09.jpg", "蒜蓉青菜": "img/10.jpg", "炒时蔬": "img/11.jpg", "紫菜蛋花汤": "img/12.jpg", "蛋炒饭": "img/13.jpg", "担担面": "img/14.jpg", "卤面": "img/15.jpg", "芒果糯米饭": "img/16.jpg"};
+const IMGS = {"红烧肉": "img/own-hongshaorou.jpg", "农家一碗香": "img/own-nongjiayiwanxiang.jpg", "龙虾尾": "img/own-longxiawei.jpg", "干锅花菜": "img/own-ganguohuacai.jpg", "可乐鸡翅": "img/01.jpg", "油焖大虾": "img/02.jpg", "蒜蓉粉丝扇贝": "img/04.jpg", "清炖牛肋条": "img/05.jpg", "卤鸡腿": "img/06.jpg", "番茄炒蛋": "img/07.jpg", "韭菜鸡蛋": "img/08.jpg", "酸辣土豆丝": "img/09.jpg", "蒜蓉青菜": "img/10.jpg", "炒时蔬": "img/11.jpg", "紫菜蛋花汤": "img/12.jpg", "蛋炒饭": "img/13.jpg", "担担面": "img/14.jpg", "卤面": "img/15.jpg", "芒果糯米饭": "img/16.jpg"};
 const TINTS = ["#ffe9e0","#fff3cf","#e3f4e1","#e2eefc","#f3e6fa","#ffe6ec"];
 const store = {
   get(k){try{return localStorage.getItem(k)}catch(e){return null}},
